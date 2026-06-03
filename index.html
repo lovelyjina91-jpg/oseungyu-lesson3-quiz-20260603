@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 3 변형문제 - The Ig Nobel Prize</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #1f2937;
+  }
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    overflow: hidden;
+  }
+  .header {
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    color: #fff;
+    padding: 30px;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.8rem; margin-bottom: 6px; }
+  .header p { font-size: 0.95rem; opacity: 0.95; }
+  .progress-wrap {
+    height: 8px;
+    background: #fef3c7;
+    position: relative;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #ea580c);
+    width: 0%;
+    transition: width 0.4s;
+  }
+  .quiz-body { padding: 32px 28px; min-height: 340px; }
+  .qnum {
+    display: inline-block;
+    background: #fef3c7;
+    color: #b45309;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .qtype {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+  .question {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 22px;
+    color: #1f2937;
+    word-break: keep-all;
+  }
+  .question .blank {
+    display: inline-block;
+    border-bottom: 2px solid #f59e0b;
+    min-width: 80px;
+    padding: 0 6px;
+    color: #ea580c;
+    font-weight: 700;
+  }
+  .question .hint {
+    display: block;
+    color: #6b7280;
+    font-size: 0.92rem;
+    margin-top: 6px;
+    font-style: italic;
+  }
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .option {
+    padding: 14px 18px;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .option:hover { background: #fef3c7; border-color: #fbbf24; }
+  .option.selected { background: #fde68a; border-color: #f59e0b; }
+  .option .key {
+    background: #fff;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+  .option.selected .key { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+  .text-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    margin-bottom: 20px;
+  }
+  .text-input:focus { outline: none; border-color: #f59e0b; }
+  textarea.text-input { min-height: 90px; resize: vertical; }
+  .btn-row { display: flex; justify-content: space-between; gap: 10px; }
+  .btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    color: #fff;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(234,88,12,0.3); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-ghost { background: #f3f4f6; color: #6b7280; }
+  .btn-ghost:hover { background: #e5e7eb; }
+  .keyboard-hint {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 0.82rem;
+    margin-top: 14px;
+  }
+  .keyboard-hint kbd {
+    background: #f3f4f6;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #d1d5db;
+    font-family: monospace;
+    font-size: 0.78rem;
+  }
+  /* Result */
+  .result-header {
+    text-align: center;
+    padding: 30px 20px;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+  }
+  .score-circle {
+    display: inline-block;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: #fff;
+    line-height: 130px;
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #ea580c;
+    box-shadow: 0 10px 30px rgba(234,88,12,0.25);
+    margin-bottom: 16px;
+  }
+  .result-title { font-size: 1.6rem; color: #b45309; margin-bottom: 8px; }
+  .result-subtitle { color: #92400e; }
+  .result-list { padding: 24px; }
+  .result-item {
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .result-item.correct { border-color: #86efac; background: #f0fdf4; }
+  .result-item.wrong { border-color: #fca5a5; background: #fef2f2; }
+  .result-item .badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .badge.ok { background: #22c55e; color: #fff; }
+  .badge.no { background: #ef4444; color: #fff; }
+  .result-item .q { font-weight: 600; margin-bottom: 8px; color: #1f2937; }
+  .result-item .ans-row { font-size: 0.95rem; margin-top: 6px; }
+  .result-item .ans-row .label { font-weight: 700; color: #6b7280; margin-right: 6px; }
+  .result-item .ans-row .user { color: #b91c1c; }
+  .result-item .ans-row .correct-text { color: #15803d; }
+  .explain {
+    margin-top: 10px;
+    padding: 12px;
+    background: #fff;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: #374151;
+    border-left: 4px solid #f59e0b;
+  }
+  .closing {
+    text-align: center;
+    padding: 30px 20px;
+    background: #fef3c7;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #b45309;
+  }
+  .action-row {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn-kakao {
+    background: #fee500;
+    color: #3a1d1d;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-kakao:hover { background: #fdd835; }
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1f2937;
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; }
+  @media (max-width: 600px) {
+    .header h1 { font-size: 1.4rem; }
+    .quiz-body { padding: 24px 18px; }
+    .question { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="app">
+  <div class="header">
+    <h1>📚 Lesson 3 변형문제</h1>
+    <p>The Ig Nobel Prize · 금당중학교 3학년</p>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+  <div id="content"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const QUESTIONS = [
+  {
+    type: 'mc',
+    typeLabel: '어법',
+    q: '다음 빈칸에 들어갈 말로 가장 적절한 것은?<br><br><span class="hint">The Ig Nobel Prizes are awarded for discoveries <span class="blank">&nbsp;</span> first make one laugh and then think.</span>',
+    options: ['what', 'that', 'who', 'whose'],
+    answer: 1,
+    explain: '선행사 discoveries(사물)를 수식하는 주격 관계대명사가 필요하므로 that(또는 which). what은 선행사를 포함하므로 불가.'
+  },
+  {
+    type: 'fill',
+    typeLabel: '빈칸 채우기',
+    q: '빈칸에 알맞은 한 단어를 쓰시오.<br><br>They were started in 1991 by AIR magazine <span class="blank">?</span> increase people\'s interest in science.<br><span class="hint">의미: ~하기 위해서 (부사적 용법, to부정사)</span>',
+    answer: ['to'],
+    explain: '"~하기 위해서"라는 목적의 의미를 나타내는 to부정사의 부사적 용법. "to increase"가 정답.'
+  },
+  {
+    type: 'mc',
+    typeLabel: '내용 일치',
+    q: 'Ig Nobel Prize에 관한 본문 내용과 일치하지 <b>않는</b> 것은?',
+    options: [
+      '1991년에 AIR 잡지사에 의해 시작되었다.',
+      '실제 노벨상 수상자들이 시상한다.',
+      '하버드 대학교의 Sanders Theater에서 열린다.',
+      '오직 사람들을 웃기는 것만이 목표이다.'
+    ],
+    answer: 3,
+    explain: '본문 "not just to make people laugh, but also to make them think about science"에 따르면, 웃기는 것 뿐만 아니라 과학에 대해 새로운 방식으로 생각하게 만드는 것도 목표이다.'
+  },
+  {
+    type: 'fill',
+    typeLabel: '영작',
+    q: '우리말 뜻에 맞도록 빈칸을 영어로 채우시오.<br><br>"주최측들은 이상한 아이디어조차 중요한 발견들로 이어질 수 있다고 믿었다."<br><br>The organizers believed that <span class="blank">?</span> ideas could lead to important discoveries.<br><span class="hint">"이상한"에 해당하는 형용사 한 단어</span>',
+    answer: ['strange', 'even strange'],
+    explain: '본문 원문은 "even strange ideas". 핵심 형용사는 strange. "even strange"도 정답으로 인정.'
+  },
+  {
+    type: 'mc',
+    typeLabel: '어휘',
+    q: '다음 중 단어와 뜻의 연결이 <b>잘못된</b> 것은?',
+    options: [
+      'unusual - 독특한, 특이한',
+      'imaginative - 상상력이 풍부한',
+      'discovery - 발견',
+      'ceremony - 호기심'
+    ],
+    answer: 3,
+    explain: 'ceremony는 "의식, 행사"라는 뜻. "호기심"은 curiosity.'
+  },
+  {
+    type: 'fill',
+    typeLabel: '빈칸 채우기',
+    q: 'Gauri Nanda won the Ig Nobel Prize in Economics for <span class="blank">?</span> an alarm clock.<br><span class="hint">"~을 발명한 것에 대해" - 전치사 for 뒤이므로 동명사 형태</span>',
+    answer: ['inventing'],
+    explain: '전치사 for 뒤에는 동명사가 와야 하므로 invent → inventing.'
+  },
+  {
+    type: 'mc',
+    typeLabel: '내용 이해',
+    q: 'Gauri Nanda가 발명한 알람시계의 특징으로 옳은 것은?',
+    options: [
+      '시간이 되면 큰 소리로 울린다.',
+      '잠자는 사람이 침대에서 나올 때까지 계속 도망친다.',
+      '자동으로 커튼을 열어준다.',
+      '음악이 점점 커지면서 사람을 깨운다.'
+    ],
+    answer: 1,
+    explain: '본문 "It keeps running away until the sleeper finally gets out of bed." (잠자는 사람이 결국 침대에서 나올 때까지 계속 도망친다)'
+  },
+  {
+    type: 'fill',
+    typeLabel: '어법',
+    q: '괄호 안에서 어법상 알맞은 말을 쓰시오.<br><br>It keeps (run) <span class="blank">?</span> away until the sleeper finally gets out of bed.<br><span class="hint">"keep + 동사ing": 계속해서 ~하다</span>',
+    answer: ['running'],
+    explain: '"keep + 동사-ing"는 "계속해서 ~하다"라는 뜻. run → running.'
+  },
+  {
+    type: 'mc',
+    typeLabel: '어휘',
+    q: '"Another study focused ___ cows." 빈칸에 알맞은 전치사는?',
+    options: ['at', 'on', 'in', 'to'],
+    answer: 1,
+    explain: 'focus on = ~에 집중하다. 전치사 on을 사용하는 숙어.'
+  },
+  {
+    type: 'order',
+    typeLabel: '어순 배열',
+    q: '다음 단어들을 바르게 배열하여 문장을 완성하시오.<br><br>[ with / produced / cows / more / names / milk ]<br><br><span class="hint">"They discovered that"으로 시작 / "이름을 가진 소들이 더 많은 우유를 생산한다"</span>',
+    answer: ['cows with names produced more milk'],
+    explain: '주어(cows with names) + 동사(produced) + 목적어(more milk) 어순. with names는 cows를 수식하는 전치사구.'
+  },
+  {
+    type: 'mc',
+    typeLabel: '내용 이해',
+    q: '소 연구에서, 이름을 가진 소가 더 많은 우유를 생산하는 이유는?',
+    options: [
+      '이름을 가진 소가 더 건강하기 때문에',
+      '농부들이 이름을 가진 소에게 더 많은 관심을 주어 스트레스를 덜 받기 때문에',
+      '이름을 가진 소가 더 좋은 사료를 먹기 때문에',
+      '이름을 가진 소가 더 어리기 때문에'
+    ],
+    answer: 1,
+    explain: '본문 "farmers pay more attention to cows with names, so the cows felt less stress." 농부들의 더 많은 관심 → 적은 스트레스 → 더 많은 우유 생산.'
+  },
+  {
+    type: 'fill',
+    typeLabel: '빈칸 채우기',
+    q: 'Scientists wanted to know <span class="blank">?</span> an empty bottle or a full bottle is stronger.<br><span class="hint">"~인지 아닌지"라는 의미의 접속사 한 단어 (if도 가능하나, or과 함께 쓰일 때 일반적으로 쓰는 단어)</span>',
+    answer: ['whether'],
+    explain: '"~인지 아닌지"를 나타내며 "A or B"의 형태와 자주 쓰이는 접속사는 whether.'
+  },
+  {
+    type: 'mc',
+    typeLabel: '내용 이해',
+    q: '맥주병 연구의 결과는?',
+    options: [
+      '빈 병이 가득 찬 병보다 더 단단하다.',
+      '가득 찬 병이 빈 병보다 더 단단하다.',
+      '두 병의 강도는 동일하다.',
+      '온도에 따라 강도가 달라진다.'
+    ],
+    answer: 0,
+    explain: '본문 "they found that empty bottles are stronger." 빈 병이 더 단단하다는 것을 발견했다.'
+  },
+  {
+    type: 'fill',
+    typeLabel: '빈칸 채우기',
+    q: 'They begin with unusual questions, but they lead <span class="blank">?</span> real and sometimes useful answers.<br><span class="hint">"~로 이어지다"</span>',
+    answer: ['to'],
+    explain: 'lead to = ~로 이어지다. 전치사 to를 쓰는 숙어.'
+  },
+  {
+    type: 'fill',
+    typeLabel: '영작',
+    q: '우리말에 맞도록 영작하시오.<br><br>"호기심, 창의성, 그리고 유머까지도 발견에 있어 중요한 역할을 할 수 있다."<br><br>Curiosity, creativity, and even humor can play an important <span class="blank">?</span> in discovery.<br><span class="hint">"역할"에 해당하는 명사 한 단어</span>',
+    answer: ['role'],
+    explain: 'play an important role in ~ = ~에서 중요한 역할을 하다. role(역할)이 핵심 단어.'
+  },
+  {
+    type: 'mc',
+    typeLabel: '어법',
+    q: '빈칸에 들어갈 말로 알맞은 것은?<br><br>The ceremony usually takes place at Harvard University, and the event is known <span class="blank">?</span> its fun atmosphere.',
+    options: ['as', 'for', 'to', 'by'],
+    answer: 1,
+    explain: 'be known for = ~로(때문에) 잘 알려져 있다. be known as = ~로서(정체성) 잘 알려져 있다. 여기서는 "재미있는 분위기 때문에 유명"하므로 for.'
+  },
+  {
+    type: 'fill',
+    typeLabel: '빈칸 채우기',
+    q: 'For example, people throw paper airplanes <span class="blank">?</span> show the fun and creative spirit of the event.<br><span class="hint">"~하기 위해" 목적을 나타내는 to부정사</span>',
+    answer: ['to'],
+    explain: '"~하기 위해" 목적의 to부정사. to show가 정답.'
+  },
+  {
+    type: 'mc',
+    typeLabel: '내용 이해',
+    q: 'Ig Nobel Prize 시상식에 관한 설명으로 옳지 <b>않은</b> 것은?',
+    options: [
+      '하버드 대학교에서 열린다.',
+      '사람들이 종이비행기를 던진다.',
+      '발표가 너무 길면 한 어린 소녀가 "Please stop. I am bored!"라고 말한다.',
+      '오늘날에는 더 이상 시상되지 않는다.'
+    ],
+    answer: 3,
+    explain: '본문 "The Ig Nobel Prize is still awarded every year." 여전히 매년 수여되고 있다.'
+  },
+  {
+    type: 'fill',
+    typeLabel: '영작',
+    q: '우리말에 맞도록 빈칸을 채우시오.<br><br>"오늘날에도, 많은 과학자들은 이 독특한 상을 받는 것을 자랑스럽게 여긴다."<br><br>Even today, many scientists are proud <span class="blank">?</span> receive this unusual prize.<br><span class="hint">"be proud ___ + 동사원형": ~하는 것을 자랑스럽게 여기다</span>',
+    answer: ['to'],
+    explain: 'be proud to + 동사원형 = ~하는 것을 자랑스러워하다. 감정의 원인을 나타내는 to부정사의 부사적 용법.'
+  },
+  {
+    type: 'mc',
+    typeLabel: '주제 파악',
+    q: '본문 전체의 주제로 가장 알맞은 것은?',
+    options: [
+      'Ig Nobel Prize의 역사와 의미, 그리고 수상 연구 사례들',
+      '노벨상 수상자들의 업적',
+      '하버드 대학교의 다양한 행사들',
+      '맥주병 제조 기술의 발전'
+    ],
+    answer: 0,
+    explain: '본문은 Ig Nobel Prize의 시작/목적/시상식, 그리고 알람시계·소·맥주병 연구 사례를 통해 "엉뚱한 질문도 중요한 발견으로 이어진다"는 메시지를 전달한다.'
+  }
+];
+
+const STUDENT_NAME = prompt('이름을 입력해주세요 (생략 가능):', '') || '학생';
+let current = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
+let selectedOption = null;
+
+const $ = id => document.getElementById(id);
+const content = $('content');
+const progressBar = $('progressBar');
+
+function normalize(s) {
+  return String(s || '').trim().toLowerCase().replace(/\s+/g, ' ').replace(/[.,!?;:]/g, '');
+}
+
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function render() {
+  if (current >= QUESTIONS.length) { renderResult(); return; }
+  const q = QUESTIONS[current];
+  progressBar.style.width = ((current) / QUESTIONS.length * 100) + '%';
+  selectedOption = answers[current];
+
+  let html = `
+    <div class="quiz-body">
+      <span class="qnum">문제 ${current + 1} / ${QUESTIONS.length}</span>
+      <span class="qtype">${q.typeLabel}</span>
+      <div class="question">${q.q}</div>
+  `;
+
+  if (q.type === 'mc') {
+    html += '<div class="options" id="options">';
+    q.options.forEach((opt, i) => {
+      html += `<button class="option ${selectedOption === i ? 'selected' : ''}" data-idx="${i}">
+        <span class="key">${i + 1}</span><span>${opt}</span>
+      </button>`;
+    });
+    html += '</div>';
+  } else {
+    const val = answers[current] || '';
+    if (q.type === 'order') {
+      html += `<textarea class="text-input" id="textInput" placeholder="여기에 영어 문장을 입력하세요...">${val}</textarea>`;
+    } else {
+      html += `<input type="text" class="text-input" id="textInput" placeholder="여기에 답을 입력하세요..." value="${val}">`;
+    }
+  }
+
+  html += `
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="prevBtn" ${current === 0 ? 'style="visibility:hidden"' : ''}>← 이전</button>
+        <button class="btn btn-primary" id="nextBtn">${current === QUESTIONS.length - 1 ? '제출하기' : '다음 →'}</button>
+      </div>
+      <div class="keyboard-hint">
+        💡 <kbd>Enter</kbd> 다음 ${q.type === 'mc' ? '· <kbd>1</kbd>~<kbd>4</kbd> 선택' : ''}
+      </div>
+    </div>
+  `;
+
+  content.innerHTML = html;
+
+  if (q.type === 'mc') {
+    document.querySelectorAll('.option').forEach(btn => {
+      btn.addEventListener('click', () => selectMC(parseInt(btn.dataset.idx)));
+    });
+  } else {
+    const ti = $('textInput');
+    ti.focus();
+    ti.addEventListener('input', e => { answers[current] = e.target.value; });
+  }
+
+  $('nextBtn').addEventListener('click', goNext);
+  if (current > 0) $('prevBtn').addEventListener('click', goPrev);
+}
+
+function selectMC(idx) {
+  selectedOption = idx;
+  answers[current] = idx;
+  document.querySelectorAll('.option').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+}
+
+function goNext() {
+  const q = QUESTIONS[current];
+  if (q.type === 'mc') {
+    if (answers[current] === null) { showToast('답을 선택해주세요!'); return; }
+  } else {
+    const v = ($('textInput').value || '').trim();
+    if (!v) { showToast('답을 입력해주세요!'); return; }
+    answers[current] = v;
+  }
+  current++;
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goPrev() {
+  if (current > 0) { current--; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+}
+
+document.addEventListener('keydown', e => {
+  if (current >= QUESTIONS.length) return;
+  const q = QUESTIONS[current];
+  if (e.key === 'Enter') {
+    if (q.type === 'order' && !e.ctrlKey) {
+      // textarea: Ctrl+Enter to submit, Enter for newline
+      if (e.target.tagName === 'TEXTAREA') return;
+    }
+    e.preventDefault();
+    goNext();
+  } else if (q.type === 'mc' && ['1','2','3','4'].includes(e.key)) {
+    const idx = parseInt(e.key) - 1;
+    if (idx < q.options.length) selectMC(idx);
+  }
+});
+
+function checkAnswer(q, userAns) {
+  if (q.type === 'mc') return userAns === q.answer;
+  const u = normalize(userAns);
+  return q.answer.some(a => normalize(a) === u);
+}
+
+function renderResult() {
+  progressBar.style.width = '100%';
+  let correct = 0;
+  const items = QUESTIONS.map((q, i) => {
+    const ok = checkAnswer(q, answers[i]);
+    if (ok) correct++;
+    return { q, idx: i, userAns: answers[i], ok };
+  });
+
+  let html = `
+    <div class="result-header">
+      <div class="score-circle">${correct}/${QUESTIONS.length}</div>
+      <div class="result-title">${STUDENT_NAME} 학생, 결과입니다!</div>
+      <div class="result-subtitle">정답률 ${Math.round(correct / QUESTIONS.length * 100)}%</div>
+    </div>
+    <div class="result-list">
+  `;
+
+  items.forEach(({ q, idx, userAns, ok }) => {
+    const userDisplay = q.type === 'mc'
+      ? (userAns !== null ? `${userAns + 1}. ${q.options[userAns]}` : '(미응답)')
+      : (userAns || '(미응답)');
+    const correctDisplay = q.type === 'mc'
+      ? `${q.answer + 1}. ${q.options[q.answer]}`
+      : q.answer.join(' / ');
+
+    html += `
+      <div class="result-item ${ok ? 'correct' : 'wrong'}">
+        <span class="badge ${ok ? 'ok' : 'no'}">${ok ? '✓ 정답' : '✗ 오답'}</span>
+        <span class="qnum">문제 ${idx + 1}</span>
+        <span class="qtype">${q.typeLabel}</span>
+        <div class="q" style="margin-top:8px">${q.q}</div>
+        <div class="ans-row"><span class="label">내 답:</span><span class="${ok ? 'correct-text' : 'user'}">${userDisplay}</span></div>
+        ${ok ? '' : `<div class="ans-row"><span class="label">정답:</span><span class="correct-text">${correctDisplay}</span></div>`}
+        <div class="explain"><b>해설:</b> ${q.explain}</div>
+      </div>
+    `;
+  });
+
+  html += `
+    </div>
+    <div class="action-row">
+      <button class="btn-kakao" id="copyBtn">📋 지나티처에게 보낼 결과 메세지 복사하기</button>
+      <button class="btn btn-ghost" id="retryBtn">🔄 다시 풀기</button>
+    </div>
+    <div class="closing">수고했습니당 ~~~ ㅎㅎㅎ 🎉</div>
+  `;
+
+  content.innerHTML = html;
+
+  $('copyBtn').addEventListener('click', () => copyKakao(items, correct));
+  $('retryBtn').addEventListener('click', () => {
+    current = 0;
+    answers = new Array(QUESTIONS.length).fill(null);
+    render();
+  });
+}
+
+function copyKakao(items, correct) {
+  const wrongs = items.filter(x => !x.ok);
+  let msg = `🌟 [Lesson 3 The Ig Nobel Prize 변형문제 결과]\n\n`;
+  msg += `👤 학생: ${STUDENT_NAME}\n`;
+  msg += `📊 점수: ${correct}/${QUESTIONS.length} (${Math.round(correct/QUESTIONS.length*100)}%)\n`;
+  msg += `❌ 틀린 문제: ${wrongs.length}개\n\n`;
+  if (wrongs.length > 0) {
+    msg += `[틀린 문제 목록]\n`;
+    wrongs.forEach(({ q, idx, userAns }) => {
+      const userDisplay = q.type === 'mc'
+        ? (userAns !== null ? `${userAns + 1}번` : '(미응답)')
+        : (userAns || '(미응답)');
+      const correctDisplay = q.type === 'mc'
+        ? `${q.answer + 1}번 (${q.options[q.answer]})`
+        : q.answer[0];
+      msg += `\n• 문제 ${idx + 1} (${q.typeLabel})\n  내 답: ${userDisplay}\n  정답: ${correctDisplay}\n`;
+    });
+  } else {
+    msg += `🎉 전부 정답! 완벽합니다!\n`;
+  }
+  msg += `\n수고했습니당 ~~~ ㅎㅎㅎ`;
+
+  navigator.clipboard.writeText(msg).then(() => {
+    showToast('✅ 복사 완료! 카카오톡에 붙여넣으세요');
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = msg;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✅ 복사 완료! 카카오톡에 붙여넣으세요');
+  });
+}
+
+render();
+</script>
+</body>
+</html>
