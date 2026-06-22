@@ -460,6 +460,24 @@ const QUESTIONS = [
   }
 ];
 
+/* ===== [변형추가] 객관식 보기 매 시도 셔플 + 선택 시 0.2초 자동 넘어가기 ===== */
+(function(){
+  function __reshuffle(){ try{ QUESTIONS.forEach(function(q){
+    var o=q['options'], a=q['answer'];
+    if(Object.prototype.toString.call(o)==='[object Array]' && typeof a==='number' && o.length>1){
+      var ord=o.map(function(_,i){return i;});
+      for(var i=ord.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=ord[i];ord[i]=ord[j];ord[j]=t;}
+      q['options']=ord.map(function(i){return o[i];}); q['answer']=ord.indexOf(a);
+    }}); }catch(e){} }
+  window.__reshuffle=__reshuffle; __reshuffle();
+  document.addEventListener('click',function(e){var t=e.target; if(t&&t.closest&&t.closest('#again,#retryBtn,#retry,#restart,#againBtn,#tryAgain')){__reshuffle();}}, true);
+  var SEL_OPT=".option[data-idx]", SEL_SEL=".option.selected";
+  function __sched(){ clearTimeout(window.__adv); var a=document.querySelector(SEL_OPT); window.__adv=setTimeout(function(){ if(a&&document.contains(a)){ try{ goNext(); }catch(e){} } },200); }
+  document.addEventListener('click',function(e){ if(e.target&&e.target.closest&&e.target.closest(SEL_OPT)){ __sched(); } });
+  document.addEventListener('keydown',function(e){ if(/^[1-9]$/.test(e.key)){ setTimeout(function(){ if(document.querySelector(SEL_SEL)){ __sched(); } },0); } });
+})();
+
+
 const STUDENT_NAME = prompt('이름을 입력해주세요 (생략 가능):', '') || '학생';
 let current = 0;
 let answers = new Array(QUESTIONS.length).fill(null);
